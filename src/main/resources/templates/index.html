@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<link rel="stylesheet" type="text/css" href="static/layui/css/layui.css" media="all"/>
+<script type="text/javascript" src="static/layui/layui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
+<script src="static/js/axios.min.js"></script>
+<body>
+<!-- 注意：(item,key,index)位置不能改变，否则内容显示出错！ -->
+<div id="app" class="layui-form">
+    <div class="layui-row layui-col-space5">
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <div class="layui-inline">
+                        <select lay-filter="transType">
+                            <option value="zh-en">中文=>英文</option>
+                            <option value="en-zh">英文=>中文</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <button type="button" @click="loadData" class="layui-btn layui-btn-danger">翻译</button>
+                        <button type="button" @click="clearData" class="layui-btn ">清空</button>
+                    </div>
+                </div>
+                <div class="layui-card-body" style="background-color:#f1efef">
+                <textarea placeholder="请输入内容" class="layui-textarea" v-model="text"
+                          style="background-color:#f1efef;min-height: 180px;border:none;resize: none;"></textarea>
+                    <div style="height: 20px;text-align: right">{{text.length}}/500</div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header"></div>
+                <div class="layui-card-body" style="background-color: #f1efef;min-height: 200px">
+                    {{transResult.tgt_text}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    let vue = new Vue({
+        el: '#app',
+        data() {
+            return {
+                transResult: {tgt_text: ""},
+                from: "zh",
+                to: "en",
+                text: ""
+            }
+        },
+        methods: {
+            clearData() {
+                this.text = ""
+                this.transResult = {}
+            },
+            loadData() {
+                axios.post('/trans', {
+                    "from": this.from,
+                    "to": this.to,
+                    "apikey": "0137a3d2a65d6e3fde8825315f65ef25",
+                    "src_text": this.text
+                }).then(function (response) {
+                    console.log(response.data);
+                    vue.transResult = response.data
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            }
+        },
+        watch: {
+            transType(newName, oldName) {
+                console.log(newName);
+                console.log(newName);
+            }
+        }
+    })
+
+    //我们强烈推荐你在代码最外层把需要用到的模块先加载
+    layui.use(['layer', 'form', 'element'], function () {
+        var layer = layui.layer
+            , form = layui.form
+            , element = layui.element
+        form.on('select(transType)', function (data) {
+            console.log(data.value.split("-")[0]);
+            console.log(data.value.split("-")[1]);
+            vue.from = data.value.split("-")[0]
+            vue.to = data.value.split("-")[1]
+        });
+
+        form.render()
+    });
+
+</script>
+</body>
+</html>
